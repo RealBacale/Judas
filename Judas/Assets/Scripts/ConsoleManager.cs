@@ -4,32 +4,47 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
 
-public class ClientManager : MonoBehaviour
+public class ConsoleManager : MonoBehaviour
 {
+    //Mettre les nouvelles commandes ici, puis dans le Awake en initialisant et ajoutant à la liste, en cas de nouveau type (ex nouvel argument) changer la méthode "HandleInput"
     public static DebugCommand EXAMPLE_COMMAND;
+    public static DebugCommand GET_JOIN_CODE;
+    
 
-    private List<object> commandList;
-
-    [SerializeField] private float console_height;
-    [SerializeField] private float text_field_height;
+    //Variables nécessaires à la console
     [SerializeField] private int line_height;
+    private NetworkClient netClient;
 
+    private float console_height = Screen.height * 1/3;
+    private float console_width = Screen.width * 2/3;
+
+    private float text_field_height;
     private bool showConsole;
     private string input;
     private List<string> output;
+    private List<object> commandList;
     
     private void Awake()
     {
+        netClient = gameObject.GetComponent<NetworkClient>();
+        text_field_height = line_height + 2;
         output = new List<string>();
 
+        //Ajouter les commandes ici
         EXAMPLE_COMMAND = new DebugCommand("ex", "Example de commande console", "exe", () =>
         {
             TestExample();
         });
+        GET_JOIN_CODE = new DebugCommand("get_code", "Demande le JoinCode généré si le client est actuellement hôte.", "get_code", () =>
+        {
+            GetJoinCode();
+        });
 
+        //Ajouter les commandes à cette liste
         commandList = new List<object>
         {
-            EXAMPLE_COMMAND
+            EXAMPLE_COMMAND,
+            GET_JOIN_CODE
         };
     }
 
@@ -54,7 +69,6 @@ public class ClientManager : MonoBehaviour
     {
         if(showConsole)
         {
-            float console_width = 2 * Screen.width / 3;
             Rect output_view = new Rect(0, 0, console_width, console_height); //La console d'affichage
             GUI.Box(output_view, ""); 
             input = GUI.TextField(new Rect(0, console_height + 1, console_width, text_field_height), input); // la partie texte
@@ -103,8 +117,18 @@ public class ClientManager : MonoBehaviour
         }
     }
 
+    //Méthodes correspondant aux commandes
     private void TestExample()
     {
         print("Example de commande");
+    }
+
+    private void GetJoinCode()
+    {
+        if(netClient.join_code == ""){
+            print("Aucun code disponible, le client n'est probablement pas hôte.");
+        }else{
+            print("Le Join Code est: " + netClient.join_code);
+        }
     }
 }

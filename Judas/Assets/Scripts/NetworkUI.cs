@@ -3,19 +3,37 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class NetworkUI : MonoBehaviour
 {
 
     [SerializeField] private Button btHost;
     [SerializeField] private Button btClient;
-
-    private void Awake() {
+    [SerializeField] private TMP_InputField inJoinCode;
+    [SerializeField] private GameObject clientManager;
+    private NetworkClient client;
+    private void Start() {
+        client = clientManager.GetComponent<NetworkClient>();
         btHost.onClick.AddListener(() => {
-            NetworkManager.Singleton.StartHost();
+            Host();
         });
         btClient.onClick.AddListener(() => {
-            NetworkManager.Singleton.StartClient();
+            Join();
         });
+    }
+
+
+    private void Host()
+    {
+        StartCoroutine(client.ConfigureTransportAndStartNgoAsHost());
+    }
+
+    private void Join() 
+    {
+        if(inJoinCode.text != "")
+        {
+            StartCoroutine(client.ConfigureTransportAndStartNgoAsConnectingPlayer(inJoinCode.text));    
+        }
     }
 }
