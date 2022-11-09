@@ -13,7 +13,6 @@ public class ConsoleManager : MonoBehaviour
 
     //Variables nécessaires à la console
     [SerializeField] private int line_height;
-    private NetworkClient netClient;
 
     private float console_height = Screen.height * 1/3;
     private float console_width = Screen.width * 2/3;
@@ -26,7 +25,6 @@ public class ConsoleManager : MonoBehaviour
     
     private void Awake()
     {
-        netClient = gameObject.GetComponent<NetworkClient>();
         text_field_height = line_height + 2;
         output = new List<string>();
 
@@ -125,10 +123,10 @@ public class ConsoleManager : MonoBehaviour
 
     private void GetJoinCode()
     {
-        if(netClient.join_code == ""){
-            print("Aucun code disponible, le client n'est probablement pas hôte.");
+        if(NetworkClient.join_code == ""){
+            print("Aucun code disponible, aucune partie n'est en cours");
         }else{
-            print("Le Join Code est: " + netClient.join_code);
+            print("Le Join Code est: " + NetworkClient.join_code);
         }
     }
 }

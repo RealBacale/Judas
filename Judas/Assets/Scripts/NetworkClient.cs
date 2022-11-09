@@ -11,19 +11,29 @@ using System.Linq;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 
-public class NetworkClient : MonoBehaviour
+public static class NetworkClient
 {
    
     public const int MAX_PLAYERS = 10;
 
-    public string join_code;
-
-    private void Awake() {
-        AuthenticatingAPlayer();
+    private static string _join_code;
+    public static string join_code {
+        get
+        {
+            return _join_code;
+        }
+        set
+        {
+            _join_code = value;
+            OnJoinCodeChange();
+        }
     }
 
+    public delegate void OnVariableChangeDelegate();
+    public static event OnVariableChangeDelegate OnJoinCodeChange;
+
     // Setup authentication event handlers if desired
-    void SetupEvents() {
+    private static void SetupEvents() {
         AuthenticationService.Instance.SignedIn += () => {
             // Shows how to get a playerID
             Debug.Log($"PlayerID: {AuthenticationService.Instance.PlayerId}");
@@ -48,7 +58,7 @@ public class NetworkClient : MonoBehaviour
     }
 
     //Authentifie un joueur
-    async void AuthenticatingAPlayer()
+    public async static Task AuthenticatingAPlayer()
     {
         try
         {
@@ -98,7 +108,7 @@ public class NetworkClient : MonoBehaviour
 
 
     //Configure le transport et lance le NGO en tant qu'hôte
-    public IEnumerator ConfigureTransportAndStartNgoAsHost()
+    public static IEnumerator ConfigureTransportAndStartNgoAsHost(Action<String> PassJoinCode)
     {
         var serverRelayUtilityTask = AllocateRelayServerAndGetJoinCode();
         while (!serverRelayUtilityTask.IsCompleted)
@@ -114,12 +124,13 @@ public class NetworkClient : MonoBehaviour
         var (ipv4address, port, allocationIdBytes, connectionData, key, joinCode) = serverRelayUtilityTask.Result;
 
         // Display the join code to the user.
-        join_code = joinCode;
-        Debug.Log("Le code est :" + join_code);
+        PassJoinCode(joinCode);
+        Debug.Log("Le code est :" + joinCode);
         Debug.Log(string.Format("ipv4_{0}_port_{1}_allocIdBytes_{2}_key_{3}_connectionData_{4}",ipv4address.ToString(), port.ToString(), allocationIdBytes.ToString(),key.ToString(),connectionData.ToString()));
 
         // The .GetComponent method returns a UTP NetworkDriver (or a proxy to it)
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetHostRelayData(ipv4address, port, allocationIdBytes, key, connectionData, true);
+
         NetworkManager.Singleton.StartHost();
         yield return null;
     }
@@ -147,9 +158,10 @@ public class NetworkClient : MonoBehaviour
         return (dtlsEndpoint.Host, (ushort)dtlsEndpoint.Port, allocation.AllocationIdBytes, allocation.ConnectionData, allocation.HostConnectionData, allocation.Key);
     }
 
-    public IEnumerator ConfigureTransportAndStartNgoAsConnectingPlayer(string joinCode)
+    public static IEnumerator ConfigureTransportAndStartNgoAsConnectingPlayer(string joinCode)
     {
         // Populate RelayJoinCode beforehand through the UI
+        join_code = joinCode;
         var clientRelayUtilityTask = JoinRelayServerFromJoinCode(joinCode);
 
         while (!clientRelayUtilityTask.IsCompleted)
