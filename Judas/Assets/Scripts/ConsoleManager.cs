@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
+using UnityEngine.SceneManagement;
 
 public class ConsoleManager : MonoBehaviour
 {
     //Mettre les nouvelles commandes ici, puis dans le Awake en initialisant et ajoutant à la liste, en cas de nouveau type (ex nouvel argument) changer la méthode "HandleInput"
     public static DebugCommand EXAMPLE_COMMAND;
     public static DebugCommand GET_JOIN_CODE;
+    public static DebugCommand CREATE_GAME;
     
 
     //Variables nécessaires à la console
@@ -37,12 +39,17 @@ public class ConsoleManager : MonoBehaviour
         {
             GetJoinCode();
         });
+        CREATE_GAME = new DebugCommand("host_game", "Créer une nouvelle partie en tant qu'hôte", "host_game", () =>
+        {
+            CreateGame();
+        });
 
         //Ajouter les commandes à cette liste
         commandList = new List<object>
         {
             EXAMPLE_COMMAND,
-            GET_JOIN_CODE
+            GET_JOIN_CODE,
+            CREATE_GAME
         };
     }
 
@@ -123,10 +130,26 @@ public class ConsoleManager : MonoBehaviour
 
     private void GetJoinCode()
     {
-        if(NetworkClient.join_code == ""){
+        DisplayJoinCode(NetworkClient.join_code);
+    }
+
+    private void DisplayJoinCode(string joinCode){
+        if(joinCode == ""){
             print("Aucun code disponible, aucune partie n'est en cours");
         }else{
-            print("Le Join Code est: " + NetworkClient.join_code);
+            print("Le Join Code est: " + joinCode);
         }
     }
+
+    public async void CreateGame()
+    {        
+        //Authentifie le joueur
+        await NetworkClient.AuthenticatingAPlayer();
+        //Créer une partie en temps qu'hôte, en générant l'allocation qui donne le joinCode
+        StartCoroutine(NetworkClient.ConfigureTransportAndStartNgoAsHost(DisplayJoinCode));
+
+        //Destroy(gameObject);
+    }
+
+
 }

@@ -16,6 +16,8 @@ public static class NetworkClient
    
     public const int MAX_PLAYERS = 10;
 
+    public static string PlayerID;
+
     private static string _join_code;
     public static string join_code {
         get
@@ -37,6 +39,7 @@ public static class NetworkClient
         AuthenticationService.Instance.SignedIn += () => {
             // Shows how to get a playerID
             Debug.Log($"PlayerID: {AuthenticationService.Instance.PlayerId}");
+            PlayerID = AuthenticationService.Instance.PlayerId;
 
             // Shows how to get an access token
             Debug.Log($"Access Token: {AuthenticationService.Instance.AccessToken}");
