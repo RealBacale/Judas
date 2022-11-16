@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -22,11 +23,30 @@ public class Player : Entity
     private Vector2? mousePos = null;
 
     private bool isOnCoolDown = false;
+    private bool isFiring = false;
+
+    private PlayerControls controls;
 
     private void Awake() {
+        controls = new PlayerControls();
         base.healthPoints = defaultHP;
-        if(IsOwner)
-            PlayerID = NetworkClient.PlayerID;
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        PlayerID = OwnerClientId.ToString();
+    }
+
+    private void OnEnable() {
+        controls.Player.Fire.started += StartFiring;
+        controls.Player.Fire.canceled += StopFiring;
+        controls.Player.Fire.Enable();
+    }
+
+
+    private void OnDisable() {
+        controls.Player.Fire.started -= StartFiring;
+        controls.Player.Fire.canceled -= StopFiring;
     }
 
     private void Start() {
@@ -44,6 +64,11 @@ public class Player : Entity
 
     private void FixedUpdate() 
     {
+        //DEBUG
+        Spell check = new Spell(defaultAttackSpeed, defaultProjectileSpeed, defaultDamage);
+        if (currentSpell != check)
+            currentSpell = check;
+
         //Si le client actuel possède l'objet, permet de ne déplacer que le bon joueur
         if(IsOwner)
         {
@@ -88,12 +113,34 @@ public class Player : Entity
         }
     }
 
-    private void OnFire(InputValue value)
+    // private void OnFire(InputValue value)
+    // {
+    //     if(IsOwner)
+    //     {
+    //         CreateProjServerRpc();
+    //     }
+    // }
+
+    private void StartFiring(InputAction.CallbackContext obj)
+    {
+        if(IsOwner){
+            isFiring = true;
+            StartCoroutine(Fire());
+        }
+    }
+
+    private void StopFiring(InputAction.CallbackContext obj)
     {
         if(IsOwner)
-        {
-            CreateProjServerRpc();
-        }
+            isFiring = false;
+    }
+
+    private IEnumerator Fire() 
+    {
+        CreateProjServerRpc();
+        yield return null;
+        if(isFiring)
+            StartCoroutine(Fire());
     }
 
     private IEnumerator CoolDown(float cdTime){
@@ -107,6 +154,11 @@ public class Player : Entity
         if(!isOnCoolDown){
             //On instantie le projectile
             GameObject proj = Instantiate(projectile, transform.position, transform.rotation); 
+            //On récupère le composant proj pour ajouter les degats et l'id du tireur
+            ProjectileBehaviour projScript = proj.GetComponent<ProjectileBehaviour>();
+            projScript.damage = currentSpell.damage;
+            projScript.sourceID = PlayerID;
+
             //On le fait spawn pour indiquer au serveur qu'il faut l'instancier chez tous les clients
             proj.GetComponent<NetworkObject>().Spawn(true);
             //on le met en cd  
@@ -115,13 +167,9 @@ public class Player : Entity
             StartCoroutine(CoolDown(1 / currentSpell.attackSpeed));
             //puis on ajoute une force au proj pour qu'il parte tout droit, on tient compte de sa vitesse
             Rigidbody2D rb = proj.GetComponent<Rigidbody2D>();
-            print("current force_" + proj.transform.up.ToString() +"___" + currentSpell.projectileSpeed.ToString());
             rb.AddForce(proj.transform.up * currentSpell.projectileSpeed, ForceMode2D.Impulse);
 
-            //On récupère le composant proj pour ajouter les degats et l'id du tireur
-            ProjectileBehaviour projScript = proj.GetComponent<ProjectileBehaviour>();
-            projScript.damage = currentSpell.damage;
-            projScript.sourceID = PlayerID;
+
         }
     }
 }

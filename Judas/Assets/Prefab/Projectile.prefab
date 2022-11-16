@@ -145,6 +145,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 30
+  maxX: 100
+  maxY: 100
   sourceID: 
 --- !u!50 &1046434327323148765
 Rigidbody2D:

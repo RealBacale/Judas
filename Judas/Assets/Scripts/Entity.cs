@@ -11,9 +11,14 @@ public class Entity : NetworkBehaviour
         set{
             _healthPoints = value;
             if(_healthPoints <= 0)
-                gameObject.GetComponent<NetworkObject>().Despawn();
+                DestroyEntityServerRpc();
         }
     }
 
+    [ServerRpc]
+    private void DestroyEntityServerRpc()
+    {
+        gameObject.GetComponent<NetworkObject>().Despawn();
+    }
 
 }
