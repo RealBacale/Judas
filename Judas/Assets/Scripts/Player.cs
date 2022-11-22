@@ -52,6 +52,14 @@ public class Player : Entity
     private void Start() {
         //On créé un sort de base pour tous les joueurs 
         currentSpell = new Spell(defaultAttackSpeed, defaultProjectileSpeed, defaultDamage);
+
+        //Si on est sur le joueur du client actuel, on lu iattache la caméra principale
+        if(IsOwner)
+        {
+            CameraBehaviour cam = Camera.main.GetComponent<CameraBehaviour>();
+            if(cam != null)
+                cam.target = this.transform;
+        }
     }
 
     
@@ -78,6 +86,7 @@ public class Player : Entity
             //Pour la rotation, si souris on force le joueur à regarder dans sa direction, sinon on applique une roation basée sur l'input du joystick
             if(mousePos != null)//Uniquement pour souris
             {
+                mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 //Pour calculer la rotation on applique au vecteur up de notre perso la différence le pos de la souris et de la pos du perso
                 transform.up = (Vector2)mousePos - (new Vector2(transform.position.x, transform.position.y));
             }else{//Uniquement pour les joysticks

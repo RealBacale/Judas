@@ -25,7 +25,6 @@ public class ProjectileBehaviour : NetworkBehaviour
         {
             //Si la cible est un joueur ou un mob
             if (other.tag == "Player") {
-                print("TargetID_" + other.GetComponent<Player>().PlayerID + "_SourceID_" + sourceID);
                 if(other.GetComponent<Player>().PlayerID != sourceID)
                 {
                     HitTarget(other.gameObject);
