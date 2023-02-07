@@ -11,8 +11,13 @@ public class Entity : NetworkBehaviour
         set{
             _healthPoints = value;
             if(_healthPoints <= 0)
-                DestroyEntityServerRpc();
+                OnDeath();
         }
+    }
+
+    public virtual void OnDeath()
+    {
+        DestroyEntityServerRpc();
     }
 
     [ServerRpc]

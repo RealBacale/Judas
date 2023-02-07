@@ -16,7 +16,11 @@ public class Player : Entity
     [SerializeField] private float defaultAttackSpeed;
     [SerializeField] private float defaultProjectileSpeed;
     [SerializeField] private int defaultDamage;
-    [SerializeField] private int defaultHP;
+    [SerializeField] private int defaultHP = 100;
+
+    [SerializeField] private Sprite aliveSprite;
+    [SerializeField] private Sprite ghostSprite;
+
     private Vector3 moveDirection = Vector3.zero;
     private Vector3 lookDirection = Vector3.zero;
 
@@ -27,7 +31,11 @@ public class Player : Entity
 
     private PlayerControls controls;
 
+    private SpriteRenderer rend;
+
     private void Awake() {
+        rend = gameObject.GetComponent<SpriteRenderer>();
+        rend.sprite = aliveSprite;
         controls = new PlayerControls();
         base.healthPoints = defaultHP;
     }
@@ -62,13 +70,6 @@ public class Player : Entity
         }
     }
 
-    
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 
     private void FixedUpdate() 
     {
@@ -132,7 +133,8 @@ public class Player : Entity
 
     private void StartFiring(InputAction.CallbackContext obj)
     {
-        if(IsOwner){
+        //On ne permet de tirer que si c'est le bon joueur et qu'il est bien en vie
+        if(IsOwner && healthPoints > 0){
             isFiring = true;
             StartCoroutine(Fire());
         }
@@ -155,6 +157,30 @@ public class Player : Entity
     private IEnumerator CoolDown(float cdTime){
         yield return new WaitForSecondsRealtime(cdTime);
         isOnCoolDown = false;
+    }
+
+    public override void OnDeath()
+    {
+        KillPlayerClientRpc();
+    }
+
+    [ClientRpc]
+    public void KillPlayerClientRpc()
+    {
+        if(healthPoints <= 0)
+        {
+            rend.sprite = ghostSprite;
+        }
+    }
+
+    [ClientRpc]
+    public void ResurectPlayerClientRpc()
+    {
+        if(healthPoints <= 0)
+        {
+            rend.sprite = aliveSprite;
+            healthPoints = defaultHP;
+        }
     }
 
     [ServerRpc]

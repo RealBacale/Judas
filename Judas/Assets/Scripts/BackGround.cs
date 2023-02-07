@@ -20,7 +20,7 @@ public class BackGround : MonoBehaviour
             float rdY = UnityEngine.Random.Range(transform.localScale.y / 2, -transform.localScale.y / 2);
             GameObject newGrass = Instantiate(grass, new Vector3(transform.position.x + rdX, transform.position.y + rdY, 0), Quaternion.identity);
 
-            newGrass.transform.localScale *= UnityEngine.Random.Range(0.7f, 1.3f);
+            newGrass.transform.localScale *= UnityEngine.Random.Range(0.4f, 1.2f);
         }
     }
 

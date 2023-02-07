@@ -4500,7 +4500,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grass: {fileID: 8108517320651087028, guid: fc0e0216ee86f164880f49a1a8e7ae29, type: 3}
-  grassQuantity: 10
+  grassQuantity: 40
 --- !u!1 &2020795540
 GameObject:
   m_ObjectHideFlags: 0
@@ -4646,3 +4646,77 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7092565164041174287a0cf680f1f7c5, type: 3}
+--- !u!1001 &4759107602537862113
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1108876336785433514, guid: 723fd78281c716644b4104124f2c5e5c, type: 3}
+      propertyPath: m_RootOrder
+      value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 1108876336785433514, guid: 723fd78281c716644b4104124f2c5e5c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1108876336785433514, guid: 723fd78281c716644b4104124f2c5e5c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 9.53
+      objectReference: {fileID: 0}
+    - target: {fileID: 1108876336785433514, guid: 723fd78281c716644b4104124f2c5e5c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1108876336785433514, guid: 723fd78281c716644b4104124f2c5e5c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1108876336785433514, guid: 723fd78281c716644b4104124f2c5e5c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1108876336785433514, guid: 723fd78281c716644b4104124f2c5e5c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1108876336785433514, guid: 723fd78281c716644b4104124f2c5e5c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1108876336785433514, guid: 723fd78281c716644b4104124f2c5e5c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1108876336785433514, guid: 723fd78281c716644b4104124f2c5e5c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1108876336785433514, guid: 723fd78281c716644b4104124f2c5e5c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4755614598349649709, guid: 723fd78281c716644b4104124f2c5e5c, type: 3}
+      propertyPath: m_Name
+      value: Phoenix
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 723fd78281c716644b4104124f2c5e5c, type: 3}
+--- !u!1 &4759107602537862114 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4755614598349649709, guid: 723fd78281c716644b4104124f2c5e5c, type: 3}
+  m_PrefabInstance: {fileID: 4759107602537862113}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4759107602537862115
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4759107602537862114}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c356336fea1afe4fb745f7b75888080, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

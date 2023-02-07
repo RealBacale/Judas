@@ -23,12 +23,15 @@ public class ProjectileBehaviour : NetworkBehaviour
     void OnTriggerEnter2D(Collider2D other) {
         if(IsServer)
         {
-            //Si la cible est un joueur ou un mob
+            //Si la cible est un joueur 
             if (other.tag == "Player") {
-                if(other.GetComponent<Player>().PlayerID != sourceID)
+                Player player = other.GetComponent<Player>();
+                //On ne le touche que si le joueur n'est pas le tireur, et qu'il est en vie
+                if(player.PlayerID != sourceID && player.healthPoints > 0)
                 {
                     HitTarget(other.gameObject);
                 }
+            //Si c'est un mob
             }else if(other.tag == "Mob"){
                 HitTarget(other.gameObject);
             }else if(other.tag == "Wall"){
