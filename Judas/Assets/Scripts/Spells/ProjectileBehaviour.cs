@@ -16,7 +16,7 @@ public class ProjectileBehaviour : NetworkBehaviour
         if(IsServer){
             //si le proj est hors de la map il est détruit
             if(Mathf.Abs(transform.position.x) > maxX || Mathf.Abs(transform.position.y) > maxY)
-                DestroyProjServerRpc();
+                DestroyProj();
         }
     }
 
@@ -27,7 +27,7 @@ public class ProjectileBehaviour : NetworkBehaviour
             if (other.tag == "Player") {
                 Player player = other.GetComponent<Player>();
                 //On ne le touche que si le joueur n'est pas le tireur, et qu'il est en vie
-                if(player.PlayerID != sourceID && player.healthPoints > 0)
+                if(player.PlayerID != sourceID && player.HealthPoints.Value > 0)
                 {
                     HitTarget(other.gameObject);
                 }
@@ -36,25 +36,36 @@ public class ProjectileBehaviour : NetworkBehaviour
                 HitTarget(other.gameObject);
             }else if(other.tag == "Wall"){
                 //si on touche un mur le proj est détruit
-                DestroyProjServerRpc();
+                DestroyProj();
             }
         }
 	}
 
+    
     private void HitTarget(GameObject target)
     {
-        //on trouve l'entité touchée et on lui enlève autant de vie que de degat sur le proj
-        Entity ent = target.GetComponent<Entity>();
-        ent.healthPoints -= damage;
+        if(IsServer)
+        {
+            print("Collisison Proj with " + target.tag);
+            //on trouve l'entité touchée et on lui enlève autant de vie que de degat sur le proj
+            Entity ent = target.GetComponent<Entity>();
+            if(ent is null){
+                print("ERREUR EntityComponent introuvable");
+            }else{
+                print("Component Entity : " + ent.name + "___" + ent.ToString());
+            }
+            print("Appel RPC de PV " + ent.HealthPoints.Value + " ,DMG " + damage);
+            //On peut (et on doit) appeler directement la valeur de la variable network car on sait qu'on est actuellement sur le serveur
+            ent.HealthPoints.Value = ent.HealthPoints.Value - damage;
 
-        //Pour éviter qu'un même proj fasse plusieurs dégâts le temps qu'il soit détruit, on passe les dégâts à zéro avant le rpc
-        damage = 0;
-        //après avoir touché, le proj est détruit (on utilise despawn pour le détruire sur le serveur)
-        DestroyProjServerRpc();
+            //Pour éviter qu'un même proj fasse plusieurs dégâts le temps qu'il soit détruit, on passe les dégâts à zéro avant le rpc
+            damage = 0;
+            //après avoir touché, le proj est détruit (on utilise despawn pour le détruire sur le serveur)
+            DestroyProj();
+        }
     }
 
-    [ServerRpc]
-    private void DestroyProjServerRpc()
+    private void DestroyProj()
     {
         gameObject.GetComponent<NetworkObject>().Despawn();
     }

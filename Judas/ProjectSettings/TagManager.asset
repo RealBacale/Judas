@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Mob
   - Wall
+  - UIManager
   layers:
   - Default
   - TransparentFX

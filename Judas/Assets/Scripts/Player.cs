@@ -3,10 +3,19 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
+
+
+//Représente une action à effectuer sur tous les clients, voir méthode ExecuteOnAllClientsServerRpc
+public enum PlayerClientActionEnum{
+    Kill,
+    Resurect
+}
 
 public class Player : Entity
 {
+
     public string PlayerID;
     //Le sort de base actuellement équipé par le joueur
     public Spell currentSpell;
@@ -15,11 +24,13 @@ public class Player : Entity
 
     [SerializeField] private float defaultAttackSpeed;
     [SerializeField] private float defaultProjectileSpeed;
-    [SerializeField] private int defaultDamage;
-    [SerializeField] private int defaultHP = 100;
+    private int defaultDamage = 20;
+    private int defaultHP = 100;
 
     [SerializeField] private Sprite aliveSprite;
     [SerializeField] private Sprite ghostSprite;
+
+    private UIManager uIManager;
 
     private Vector3 moveDirection = Vector3.zero;
     private Vector3 lookDirection = Vector3.zero;
@@ -33,15 +44,25 @@ public class Player : Entity
 
     private SpriteRenderer rend;
 
+    public override int DefaultHealth 
+    {
+        get {return defaultHP;}
+    }
+
     private void Awake() {
-        rend = gameObject.GetComponent<SpriteRenderer>();
+        //Le renderer est sur le parent pour éviter qu'il se tourne avec la pos de la souris
+        rend = transform.GetChild(0).GetComponent<SpriteRenderer>();
         rend.sprite = aliveSprite;
         controls = new PlayerControls();
-        base.healthPoints = defaultHP;
+        uIManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
     }
 
     public override void OnNetworkSpawn()
     {
+        base.OnNetworkSpawn();
+        //On souscrit à l'évènement de changement de vie et on l'appelle une fois pour update le tout
+        base.HealthPoints.OnValueChanged += PlayerHealthChanged;
+        PlayerHealthChanged(HealthPoints.Value,HealthPoints.Value);
         PlayerID = OwnerClientId.ToString();
     }
 
@@ -95,7 +116,12 @@ public class Player : Entity
                 transform.rotation = Quaternion.Euler(lookDirection );//* Time.deltaTime);
             }
         }
-
+        //le scale X du sprite est inversé lorsque la souris est à sa gauche
+        if(transform.rotation.z > 0){
+            rend.transform.localScale = new Vector3(-1,1,1);
+        }else{
+            rend.transform.localScale = new Vector3(1,1,1);
+        }
     }
 
     private void OnMove(InputValue value)
@@ -134,7 +160,7 @@ public class Player : Entity
     private void StartFiring(InputAction.CallbackContext obj)
     {
         //On ne permet de tirer que si c'est le bon joueur et qu'il est bien en vie
-        if(IsOwner && healthPoints > 0){
+        if(IsOwner && HealthPoints.Value > 0){
             isFiring = true;
             StartCoroutine(Fire());
         }
@@ -159,27 +185,59 @@ public class Player : Entity
         isOnCoolDown = false;
     }
 
-    public override void OnDeath()
-    {
-        KillPlayerClientRpc();
+    private void PlayerHealthChanged(int oldValue, int newValue){
+        if(newValue <= 0 && !rend.sprite.Equals(ghostSprite)){
+            rend.sprite = ghostSprite;
+        }else if (newValue > 0 && !rend.sprite.Equals(aliveSprite)){
+            rend.sprite = aliveSprite;
+        }
+
+
+        if(IsOwner){
+            uIManager.UpdatePlayerHealth(base.HealthPoints.Value, defaultHP);
+        }
     }
 
-    [ClientRpc]
-    public void KillPlayerClientRpc()
+    public override void OnDeath()
     {
-        if(healthPoints <= 0)
-        {
-            rend.sprite = ghostSprite;
+        print("Execute Kill");
+        if(!IsServer){
+            ExecuteOnAllClientsServerRpc(PlayerClientActionEnum.Kill);
+        }else{
+            KillPlayerClientRpc();
         }
     }
 
     [ClientRpc]
-    public void ResurectPlayerClientRpc()
+    private void KillPlayerClientRpc()
     {
-        if(healthPoints <= 0)
+        // if(HealthPoints.Value <= 0)
+        // {
+        //     rend.sprite = ghostSprite;
+        // }
+    }
+
+    [ClientRpc]
+    private void ResurectPlayerClientRpc()
+    {
+        if(HealthPoints.Value <= 0)
         {
-            rend.sprite = aliveSprite;
-            healthPoints = defaultHP;
+            // rend.sprite = aliveSprite;
+            base.SetHealthServerRpc(defaultHP);
+        }
+    }
+
+
+    ///Permet d'exécuter qq chose sur tous les clients en même temps, seul le serveur peut appeler un clientRpc
+    [ServerRpc]
+    public void ExecuteOnAllClientsServerRpc(PlayerClientActionEnum action){
+        switch(action){
+            case PlayerClientActionEnum.Kill:
+                KillPlayerClientRpc();
+                break;
+            case PlayerClientActionEnum.Resurect:
+                ResurectPlayerClientRpc();
+                break;
         }
     }
 

@@ -9,8 +9,8 @@ public class Phoenix : MonoBehaviour
         //Si la cible est un joueur et qu'il est mort, on le res
         if (other.tag == "Player") {
             Player player = other.GetComponent<Player>();
-            if(player.healthPoints <= 0)
-                player.ResurectPlayerClientRpc();
+            if(player.HealthPoints.Value <= 0)
+                player.ExecuteOnAllClientsServerRpc(PlayerClientActionEnum.Resurect);
         }
 	}
 }

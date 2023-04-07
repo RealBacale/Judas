@@ -4,10 +4,18 @@ using UnityEngine;
 
 public class EnemyBehaviour : Entity
 {
+    [SerializeField] private int damage;
+    private int defaultHP = 50;
+
+    public override int DefaultHealth 
+    {
+        get {return defaultHP;}
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        base.healthPoints = 50;
+        
     }
 
     // Update is called once per frame
@@ -15,4 +23,16 @@ public class EnemyBehaviour : Entity
     {
         
     }
+
+    void OnTriggerEnter2D(Collider2D other) {
+        if(IsServer)
+        {
+            print("Collisison Enemy with " + other.tag);
+            //Si la cible est un joueur 
+            if (other.tag == "Player") {
+                Player player = other.GetComponent<Player>();
+                player.SetHealthServerRpc(player.HealthPoints.Value - damage);
+            }
+        }
+	}
 }
